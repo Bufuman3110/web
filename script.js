@@ -1,10 +1,10 @@
-// Chiede all'utente di inserire una password
+// Crea un input per la password
 const passwordInput = document.createElement('input');
 passwordInput.type = 'password'; // Imposta il tipo a 'password'
 passwordInput.placeholder = 'Inserisci la password';
 document.body.appendChild(passwordInput);
 
-// Aggiungi un pulsante per confermare la password
+// Crea un pulsante per confermare
 const submitButton = document.createElement('button');
 submitButton.innerText = 'Invia';
 document.body.appendChild(submitButton);
@@ -32,11 +32,11 @@ submitButton.addEventListener('click', () => {
 
     // Controlla se la password è corretta
     if (password === "negro") {
-        // Se la password è corretta, mostra il contenuto della pagina e consente clic destro, F11 e F12
-        document.body.classList.remove("hidden");
+        // Se la password è corretta, mostra il contenuto della pagina
+        document.body.innerHTML = "<h1>Contenuto Riservato</h1>";
         document.body.style.display = "block";
     } else {
-        // Se la password è sbagliata, mostra un messaggio di accesso negato, blocca clic destro, F12 e F11
+        // Se la password è sbagliata, mostra un messaggio di accesso negato
         document.body.innerHTML = "<h1>Accesso negato</h1>";
         document.body.style.display = "block";
 
