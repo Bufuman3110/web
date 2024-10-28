@@ -1,44 +1,10 @@
-// Funzione per creare l'interfaccia di inserimento password
-function createPasswordInput() {
-    // Crea un input per la password
-    const passwordInput = document.createElement('input');
-    passwordInput.type = 'password'; // Imposta il tipo a 'password'
-    passwordInput.placeholder = 'Inserisci la password';
-    document.body.appendChild(passwordInput);
-
-    // Crea un pulsante per confermare
-    const submitButton = document.createElement('button');
-    submitButton.innerText = 'Invia';
-    document.body.appendChild(submitButton);
-
-    // Aggiungi evento al pulsante
-    submitButton.addEventListener('click', () => {
-        const password = passwordInput.value;
-
-        // Controlla se la password è corretta
-        if (password === "negro") {
-            // Se la password è corretta, mostra il contenuto della pagina
-            document.body.classList.remove("hidden");
-            passwordInput.style.display = "none"; // Nascondi l'input
-            submitButton.style.display = "none"; // Nascondi il pulsante
-        } else {
-            // Se la password è sbagliata, mostra un messaggio di accesso negato
-            document.body.innerHTML = "<h1>Accesso negato</h1>";
-            document.body.style.display = "block";
-
-            // Aggiunge un listener per disabilitare il clic destro e F12/F11
-            document.addEventListener("contextmenu", disableRightClick);
-            document.addEventListener("keydown", disableDevTools);
-        }
-    });
-}
-
+// Chiede all'utente di inserire una password
+const password = prompt("Inserisci la password:");
 // Funzione per disabilitare il clic destro
 function disableRightClick(e) {
     e.preventDefault();
     alert("Il clic destro è disabilitato.");
 }
-
 // Funzione per disabilitare F12, F11 e altre combinazioni di ispezione
 function disableDevTools(e) {
     if (
@@ -50,6 +16,17 @@ function disableDevTools(e) {
         alert("L'ispezione e la modalità a schermo intero non sono consentite su questa pagina.");
     }
 }
+// Controlla se la password è corretta
+if (password === "negro") {
+    // Se la password è corretta, mostra il contenuto della pagina e consente clic destro, F11 e F12
+    document.body.classList.remove("hidden");
+    document.body.style.display = "block";
+} else {
+    // Se la password è sbagliata, mostra un messaggio di accesso negato, blocca clic destro, F12 e F11
+    document.body.innerHTML = "<h1>Accesso negato</h1>";
+    document.body.style.display = "block";
 
-// Crea l'interfaccia di input password all'avvio
-createPasswordInput();
+    // Aggiunge un listener per disabilitare il clic destro e F12/F11
+    document.addEventListener("contextmenu", disableRightClick);
+    document.addEventListener("keydown", disableDevTools);
+}
