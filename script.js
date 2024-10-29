@@ -23,7 +23,7 @@ if (password === "negro") {
     document.body.style.display = "block";
 } else {
     // Se la password è sbagliata, mostra un messaggio di accesso negato, blocca clic destro, F12 e F11
-    document.body.innerHTML = "<h1>Accesso negato</h1>";
+    document.body.innerHTML = "<h1>Accesso negrato</h1>";
     document.body.style.display = "block";
 
     // Aggiunge un listener per disabilitare il clic destro e F12/F11
