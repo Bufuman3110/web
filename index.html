@@ -1,143 +1,171 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-  <meta charset="UTF-8">
-  <title>Galleria immagini locale</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>La mia galleria</title>
   <style>
+    :root {
+      --max-width: 1100px;
+      --thumb-w: 220px;
+      --gap: 12px;
+    }
     body {
-      font-family: Arial, sans-serif;
-      background: #f9f9f9;
-      margin: 2em;
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      background:#f5f7fa;
+      margin:0;
+      padding:24px;
+      display:flex;
+      justify-content:center;
     }
-    .box {
-      background: #fff;
-      padding: 1em;
-      border-radius: 10px;
-      box-shadow: 0 0 5px #ccc;
-      max-width: 700px;
+    .wrap {
+      max-width: var(--max-width);
+      width:100%;
+      background:white;
+      border-radius:10px;
+      padding:20px;
+      box-shadow:0 6px 24px rgba(20,30,40,.08);
     }
-    .actions {
-      margin-bottom: 1em;
+    h1 { margin:0 0 12px 0; font-size:20px; }
+    p.meta { margin:0 0 18px 0; color:#555; font-size:14px; }
+    .controls { margin-bottom:16px; display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+    .btn {
+      display:inline-block; padding:8px 12px; background:#0b74ff; color:white; border-radius:8px; text-decoration:none;
+      font-size:14px;
     }
-    button {
-      margin: 5px;
-      padding: 0.4em 0.8em;
-      border: none;
-      border-radius: 5px;
-      background: #007bff;
-      color: white;
-      cursor: pointer;
-    }
-    button:hover {
-      background: #0056b3;
-    }
+    .btn.secondary { background:#666; }
     .gallery {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
+      display:grid;
+      grid-template-columns: repeat(auto-fill, minmax(var(--thumb-w), 1fr));
+      gap: var(--gap);
     }
-    .item {
-      position: relative;
-      display: inline-block;
+    .card {
+      position:relative;
+      overflow:hidden;
+      border-radius:8px;
+      background:#fafafa;
+      border:1px solid #eee;
     }
-    .item img {
-      max-width: 200px;
-      height: auto;
-      border-radius: 8px;
-      box-shadow: 0 0 5px #999;
+    .card img { width:100%; height: auto; display:block; object-fit:cover; }
+    .caption {
+      padding:8px;
+      font-size:13px;
+      color:#333;
+      text-align:center;
     }
-    .delete-btn {
-      position: absolute;
-      top: 5px;
-      right: 5px;
-      background: rgba(255, 0, 0, 0.8);
-      color: white;
-      border: none;
-      border-radius: 50%;
-      width: 24px;
-      height: 24px;
-      font-weight: bold;
-      cursor: pointer;
+
+    /* lightbox */
+    .lightbox {
+      position:fixed; inset:0; display:none; align-items:center; justify-content:center; background:rgba(0,0,0,.75); z-index:9999;
+    }
+    .lightbox.open { display:flex; }
+    .lightbox img { max-width:95%; max-height:92%; border-radius:6px; box-shadow:0 8px 30px rgba(0,0,0,.6); }
+    .close {
+      position:fixed; top:18px; right:20px; color:white; font-size:28px; cursor:pointer; font-weight:600;
+    }
+
+    footer { margin-top:18px; color:#666; font-size:13px; }
+    @media (max-width:540px) {
+      :root { --thumb-w: 140px; }
     }
   </style>
 </head>
 <body>
+  <div class="wrap">
+    <h1>La mia galleria</h1>
+    <p class="meta">Carica manualmente le immagini nella cartella <code>img/</code> del repo e aggiorna <code>images.json</code>. La galleria mostrerà automaticamente le immagini elencate.</p>
 
-  <div class="box">
-    <h1>Galleria immagini locale</h1>
-
-    <div class="actions">
-      <input type="file" id="fileInput" accept="image/*" multiple>
+    <div class="controls">
+      <a class="btn" href="https://github.com/bufuman3110/web/new/main/img" target="_blank" rel="noopener">Apri cartella <code>img/</code> (GitHub)</a>
+      <a class="btn secondary" href="https://github.com/bufuman3110/web/new/main" target="_blank" rel="noopener">Carica file (GitHub UI)</a>
+      <span style="margin-left:auto; color:#444; font-size:13px;">Aggiorna <code>images.json</code> dopo aver caricato</span>
     </div>
 
-    <div id="gallery" class="gallery"></div>
+    <div id="gallery" class="gallery" aria-live="polite">
+      <!-- immagini caricate dinamicamente -->
+    </div>
+
+    <footer>
+      <p>Note: su GitHub Pages non è possibile caricare file dal browser alla cartella del sito. Carica via GitHub (Upload files) e poi aggiorna <code>images.json</code>.</p>
+    </footer>
   </div>
 
-  <script>
-    const input = document.getElementById('fileInput');
-    const gallery = document.getElementById('gallery');
+  <!-- lightbox -->
+  <div id="lightbox" class="lightbox" role="dialog" aria-hidden="true">
+    <div class="close" id="lb-close" title="Chiudi">✕</div>
+    <img id="lb-img" src="" alt="Immagine ingrandita">
+  </div>
 
-    // Carica immagini da localStorage
-    window.addEventListener('DOMContentLoaded', () => {
-      const saved = JSON.parse(localStorage.getItem('immagini') || '[]');
-      saved.forEach((src, index) => mostraImmagine(src, index));
-    });
+<script>
+/*
+  index.html:
+  - legge images.json (array di percorsi relativi es. ["img/foto1.jpg","img/foto2.png"])
+  - crea la galleria (thumbnail cliccabili → lightbox)
+  - fallback se images.json non esiste o è vuoto
+*/
+(async function(){
+  const gallery = document.getElementById('gallery');
+  const lb = document.getElementById('lightbox');
+  const lbImg = document.getElementById('lb-img');
+  const lbClose = document.getElementById('lb-close');
 
-    // Aggiunge nuove immagini
-    input.addEventListener('change', () => {
-      const files = Array.from(input.files);
-      if (!files.length) return;
+  async function loadList(){
+    try {
+      const res = await fetch('images.json', {cache: "no-cache"});
+      if (!res.ok) throw new Error('images.json non trovato');
+      const list = await res.json();
+      if (!Array.isArray(list) || list.length === 0) {
+        gallery.innerHTML = '<p>Nessuna immagine elencata in <code>images.json</code>. Carica le immagini in <code>img/</code> e aggiungile al file JSON.</p>';
+        return;
+      }
+      render(list);
+    } catch (err) {
+      gallery.innerHTML = '<p><strong>images.json non trovato o non valido.</strong> Crea <code>images.json</code> nella root con un array di percorsi relativi (es. <code>["img/foto1.jpg","img/foto2.png"]</code>).</p>';
+      console.warn(err);
+    }
+  }
 
-      const immaginiSalvate = JSON.parse(localStorage.getItem('immagini') || '[]');
-
-      files.forEach(file => {
-        const reader = new FileReader();
-        reader.onload = e => {
-          const src = e.target.result;
-          immaginiSalvate.push(src);
-          localStorage.setItem('immagini', JSON.stringify(immaginiSalvate));
-          mostraImmagine(src, immaginiSalvate.length - 1);
-        };
-        reader.readAsDataURL(file);
-      });
-    });
-
-    // Mostra un'immagine nella galleria
-    function mostraImmagine(src, index) {
+  function render(list){
+    gallery.innerHTML = '';
+    list.forEach(src => {
       const div = document.createElement('div');
-      div.className = 'item';
-
+      div.className = 'card';
       const img = document.createElement('img');
       img.src = src;
+      img.alt = src.split('/').pop();
+      img.loading = 'lazy';
+      img.onerror = () => { img.style.opacity = '0.4'; img.style.filter = 'grayscale(60%)'; };
 
-      const btn = document.createElement('button');
-      btn.textContent = '×';
-      btn.className = 'delete-btn';
-      btn.title = 'Elimina questa immagine';
-      btn.addEventListener('click', () => rimuoviImmagine(index, div));
+      const cap = document.createElement('div');
+      cap.className = 'caption';
+      cap.textContent = img.alt;
 
+      img.addEventListener('click', () => openLightbox(src));
       div.appendChild(img);
-      div.appendChild(btn);
+      div.appendChild(cap);
       gallery.appendChild(div);
-    }
+    });
+  }
 
-    // Rimuove una singola immagine
-    function rimuoviImmagine(index, elemento) {
-      const immaginiSalvate = JSON.parse(localStorage.getItem('immagini') || '[]');
-      immaginiSalvate.splice(index, 1);
-      localStorage.setItem('immagini', JSON.stringify(immaginiSalvate));
-      elemento.remove();
-      // Rinfresca indici per i bottoni restanti
-      aggiornaIndici();
-    }
+  function openLightbox(src){
+    lbImg.src = src;
+    lb.classList.add('open');
+    lb.setAttribute('aria-hidden','false');
+  }
+  function closeLightbox(){
+    lb.classList.remove('open');
+    lb.setAttribute('aria-hidden','true');
+    lbImg.src = '';
+  }
 
-    // Aggiorna i riferimenti dopo una cancellazione
-    function aggiornaIndici() {
-      gallery.innerHTML = '';
-      const saved = JSON.parse(localStorage.getItem('immagini') || '[]');
-      saved.forEach((src, index) => mostraImmagine(src, index));
-    }
-  </script>
+  lbClose.addEventListener('click', closeLightbox);
+  lb.addEventListener('click', e => {
+    if (e.target === lb) closeLightbox();
+  });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
 
+  await loadList();
+})();
+</script>
 </body>
 </html>
