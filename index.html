@@ -1,131 +1,57 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="style.css">
-    <script src="script.js" defer></script>
-    <title>Comandi Windows e Script</title>
+  <meta charset="UTF-8">
+  <title>Visualizza immagine</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f9f9f9;
+      margin: 2em;
+    }
+    .box {
+      background: #fff;
+      padding: 1em;
+      border-radius: 10px;
+      box-shadow: 0 0 5px #ccc;
+      max-width: 500px;
+    }
+    img {
+      display: block;
+      margin-top: 1em;
+      max-width: 400px; /* larghezza massima */
+      height: auto; /* mantiene proporzioni */
+      border-radius: 8px;
+      box-shadow: 0 0 5px #999;
+    }
+  </style>
 </head>
-<body class="hidden">
-    <h1>Comandi Utili per Windows</h1>
-    <h2>CMD</h2>
-    <ul>
-        <li><b>netsh wlan show profiles</b></li>
-        <li><b>netsh wlan show profiles “nome rete” key=clear</b>: Per reti memorizzate, su contenuto chiave trovi la password della rete.</li>
-    </ul>
+<body>
 
-    <h2>DRIVERQUERY</h2>
-    <p><b>driverquery</b> serve a fare la lista dei driver del computer con tutti i dettagli.</p>
-    <p>Comandi:</p>
-    <ul>
-        <li><b>driverquery -v</b></li>
-        <li><b>driverquery -v > listadriver.txt</b>: salverà la lista in un file di testo nella cartella corrente.</li>
-    </ul>
+  <div class="box">
+    <h1>Carica e visualizza un’immagine</h1>
+    <input type="file" id="fileInput" accept="image/*">
+    <img id="preview" alt="Anteprima immagine" style="display:none;">
+  </div>
 
-    <h2>SHUTDOWN</h2>
-    <p>Il comando <b>shutdown</b> spegne il computer, che si può fare col pulsante senza problemi.</p>
-    <p>Comando utile:</p>
-    <ul>
-        <li><b>shutdown /r /o</b>: Riavvia il PC e lancia il menu di opzioni avanzate di avvio per accedere alla modalità provvisoria e all'utilità di recupero.</li>
-    </ul>
+  <script>
+    const input = document.getElementById('fileInput');
+    const preview = document.getElementById('preview');
 
-    <h2>SFC (System File Checker)</h2>
-    <p>Serve a fare il controllo dei file di sistema per correggere errori di file non trovati o corrotti.</p>
-    <ul>
-        <li><b>sfc /scannow</b>: rileva file danneggiati o mancanti e sostituisce con file buoni.</li>
-    </ul>
+    input.addEventListener('change', () => {
+      const file = input.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = e => {
+          preview.src = e.target.result;
+          preview.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+      } else {
+        preview.style.display = 'none';
+      }
+    });
+  </script>
 
-    <h2>TASKLIST</h2>
-    <p><b>tasklist</b> funziona come un task manager per vedere tutte le attività in esecuzione.</p>
-    <ul>
-        <li><b>tasklist -svc</b>: Mostra i servizi relativi a ciascuna attività.</li>
-        <li><b>tasklist -v</b>: Fornisce maggiori dettagli su ogni processo.</li>
-        <li><b>tasklist -m</b>: Individua i file DLL associati a processi attivi.</li>
-    </ul>
-
-    <h2>TASKKILL</h2>
-    <p>Ogni processo che appare in <b>tasklist</b> può essere terminato con il comando:</p>
-    <ul>
-        <li><b>taskkill -im nomefile</b></li>
-        <li><b>taskkill -pid IDprocesso</b></li>
-    </ul>
-
-    <h2>ASSOC</h2>
-    <p><b>assoc</b> è il comando per vedere le associazioni dei file con i programmi.</p>
-    <ul>
-        <li><b>assoc .txt</b>: Vedi quale programma apre i file .txt.</li>
-        <li><b>assoc .txt=</b>: Cambia il programma associato.</li>
-    </ul>
-
-    <h2>FC (File Compare)</h2>
-    <p><b>fc</b> serve a confrontare due file di testo per vedere se ci sono differenze.</p>
-    <ul>
-        <li>Esempio: <b>fc /l "C:\Program Files\esempio1.doc" "C:\Program Files\esempio2.doc"</b></li>
-    </ul>
-
-    <h2>IPCONFIG</h2>
-    <p>Mostra l'indirizzo IP del computer collegato alla rete.</p>
-    <ul>
-        <li><b>ipconfig /release</b> e <b>ipconfig /renew</b>: Chiedere un nuovo indirizzo IP.</li>
-        <li><b>ipconfig /flushdns</b>: Aggiorna la risoluzione dei nomi DNS.</li>
-        <li><b>ipconfig /all</b>: Mostra tutti gli indirizzi di rete del computer.</li>
-    </ul>
-
-    <h2>NETSTAT</h2>
-    <p>Il comando <b>netstat -an</b> mostra la lista delle porte di rete aperte e relativi IP.</p>
-
-    <h2>PING</h2>
-    <p>Verifica la connessione tra il computer e un dispositivo di rete.</p>
-    <ul>
-        <li><b>ping www.google.it</b>: Verifica la connessione a Internet.</li>
-    </ul>
-
-    <h2>PATHPING</h2>
-    <p>Versione avanzata di ping utile se ci sono più router tra il PC e il dispositivo che si sta testando.</p>
-
-    <h2>TRACERT</h2>
-    <p><b>tracert</b> mostra il percorso che un pacchetto fa per arrivare all'indirizzo specificato.</p>
-    <ul>
-        <li>Esempio: <b>tracert www.google.it</b></li>
-    </ul>
-
-    <h2>POWERCFG</h2>
-    <p>Gestione avanzata dell'energia del PC.</p>
-    <ul>
-        <li><b>powercfg /hibernate on</b> e <b>powercfg /hibernate off</b>: Gestione ibernazione.</li>
-        <li><b>powercfg /energy</b>: Dettagliato rapporto sul consumo di energia.</li>
-    </ul>
-
-    <h2>RECIMG</h2>
-    <p>Comando per creare un'immagine di sistema in Windows 8.</p>
-
-    <h2>NET USER</h2>
-    <p>Mostra gli utenti registrati nel PC con le rispettive password.</p>
-
-    <h2>DCOMCNFG</h2>
-    <p>Consente di configurare impostazioni specifiche di DCOM.</p>
-
-    <h2>MKDIR/MD</h2>
-    <p>Crea una cartella.</p>
-
-    <h2>MOVE</h2>
-    <p>Sposta una cartella.</p>
-
-    <h2>RD /s</h2>
-    <p>Elimina una cartella.</p>
-
-    <h2>Batch e Script VBS</h2>
-    <ul>
-        <li>Comandi batch come <b>@echo off</b> e script VBS come <b>wshshell</b> sono usati per l'automazione.</li>
-    </ul>
-
-    <h2>Altri Comandi Utili</h2>
-    <ul>
-        <li><b>gpedit.msc</b>: Criteri di gruppo.</li>
-        <li><b>msconfig</b>: Utilità di configurazione di sistema.</li>
-        <li><b>mstsc</b>: Desktop remoto.</li>
-        <li><b>regedit</b>: Editor del registro di sistema.</li>
-    </ul>
 </body>
 </html>
