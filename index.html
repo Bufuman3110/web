@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8">
-  <title>Visualizza immagine</title>
+  <title>Galleria immagini locale</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -14,41 +14,88 @@
       padding: 1em;
       border-radius: 10px;
       box-shadow: 0 0 5px #ccc;
-      max-width: 500px;
+      max-width: 600px;
     }
     img {
-      display: block;
-      margin-top: 1em;
-      max-width: 400px; /* larghezza massima */
-      height: auto; /* mantiene proporzioni */
+      display: inline-block;
+      margin: 10px;
+      max-width: 200px;
+      height: auto;
       border-radius: 8px;
       box-shadow: 0 0 5px #999;
+    }
+    .actions {
+      margin-bottom: 1em;
+    }
+    button {
+      margin-right: 10px;
+      padding: 0.5em 1em;
+      border: none;
+      border-radius: 5px;
+      background: #007bff;
+      color: white;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #0056b3;
     }
   </style>
 </head>
 <body>
 
   <div class="box">
-    <h1>Carica e visualizza un’immagine</h1>
-    <input type="file" id="fileInput" accept="image/*">
-    <img id="preview" alt="Anteprima immagine" style="display:none;">
+    <h1>Galleria immagini locale</h1>
+
+    <div class="actions">
+      <input type="file" id="fileInput" accept="image/*" multiple>
+      <button id="clearBtn">Cancella tutto</button>
+    </div>
+
+    <div id="gallery"></div>
   </div>
 
   <script>
     const input = document.getElementById('fileInput');
-    const preview = document.getElementById('preview');
+    const gallery = document.getElementById('gallery');
+    const clearBtn = document.getElementById('clearBtn');
 
+    // Carica immagini salvate da localStorage
+    window.addEventListener('DOMContentLoaded', () => {
+      const saved = JSON.parse(localStorage.getItem('immagini') || '[]');
+      saved.forEach(src => mostraImmagine(src));
+    });
+
+    // Quando selezioni nuovi file
     input.addEventListener('change', () => {
-      const file = input.files[0];
-      if (file) {
+      const files = input.files;
+      if (!files.length) return;
+
+      const immaginiSalvate = JSON.parse(localStorage.getItem('immagini') || '[]');
+
+      Array.from(files).forEach(file => {
         const reader = new FileReader();
         reader.onload = e => {
-          preview.src = e.target.result;
-          preview.style.display = 'block';
+          const src = e.target.result;
+          immaginiSalvate.push(src);
+          mostraImmagine(src);
+          localStorage.setItem('immagini', JSON.stringify(immaginiSalvate));
         };
         reader.readAsDataURL(file);
-      } else {
-        preview.style.display = 'none';
+      });
+    });
+
+    // Mostra un'immagine nella galleria
+    function mostraImmagine(src) {
+      const img = document.createElement('img');
+      img.src = src;
+      gallery.appendChild(img);
+    }
+
+    // Cancella tutte le immagini
+    clearBtn.addEventListener('click', () => {
+      if (confirm('Vuoi davvero cancellare tutte le immagini salvate?')) {
+        localStorage.removeItem('immagini');
+        gallery.innerHTML = '';
       }
     });
   </script>
